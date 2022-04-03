@@ -1,6 +1,6 @@
 # SIC-XE-Assembler-
 
-Steps to compile and run the program:-
+Steps to compile and run the program(for UNIX/LINUX):-
 
 1. execute 
 ```
@@ -19,3 +19,5 @@ cd INPUTS
 ./assembler.out
 ```
 5. Type the input file name to generate the object and listing files. There will be a test_input.txt file in INPUTS folder just for testing purpose. 
+
+6. For windows, just run the assembler.exe file. 
