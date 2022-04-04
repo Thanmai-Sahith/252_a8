@@ -8,12 +8,8 @@ using namespace std;
 ifstream intermediateFile;
 ofstream errorFile, objectFile, ListingFile;
 
-//*************************
-
 ofstream printtab;
 string writestring;
-
-//*******************
 
 bool isComment;
 string label, opcode, operand, comment;
@@ -105,9 +101,9 @@ string createObjectCodeFormat34()
   halfBytes = (getFlagFormat(opcode) == '+') ? 5 : 3;
 
   if (getFlagFormat(operand) == '#')
-  { // Immediate
+  {
     if (operand.substr(operand.length() - 2, 2) == ",X")
-    { // Error handling for Immediate with index based
+    {
       writeData = "Line: " + to_string(lineNumber) + " Index based addressing not supported with Indirect addressing";
       writeToFile(errorFile, writeData);
       objcode = intToStringHex(stringHexToInt(OPTAB[getRealOpcode(opcode)].opcode) + 1, 2);
@@ -119,7 +115,7 @@ string createObjectCodeFormat34()
     if (if_all_num(tempOperand) || ((SYMTAB[tempOperand].exists == 'y') && (SYMTAB[tempOperand].relative == 0)
                                     /**/
                                     && (CSECT_TAB[currentSectName].EXTREF_TAB[tempOperand].exists == 'n')) /****/)
-    { // Immediate integer value
+    {
       int immediateValue;
 
       if (if_all_num(tempOperand))
@@ -132,7 +128,7 @@ string createObjectCodeFormat34()
       }
       /*Process Immediate value*/
       if (immediateValue >= (1 << 4 * halfBytes))
-      { // Can't fit it
+      {
         writeData = "Line: " + to_string(lineNumber) + " Immediate value exceeds format limit";
         writeToFile(errorFile, writeData);
         objcode = intToStringHex(stringHexToInt(OPTAB[getRealOpcode(opcode)].opcode) + 1, 2);
@@ -245,7 +241,7 @@ string createObjectCodeFormat34()
   {
     string tempOperand = operand.substr(1, operand.length() - 1);
     if (tempOperand.substr(tempOperand.length() - 2, 2) == ",X" || SYMTAB[tempOperand].exists == 'n' /*****/ || CSECT_TAB[currentSectName].EXTREF_TAB[tempOperand].exists == 'y' /*****/)
-    { // Error handling for Indirect with index based
+    {
 
       /*****/
       if (CSECT_TAB[currentSectName].EXTREF_TAB[tempOperand].exists != 'y' || halfBytes == 3)
@@ -327,7 +323,7 @@ string createObjectCodeFormat34()
       }
     }
     else
-    { // No base or pc based addressing in format 4
+    {
       objcode = intToStringHex(stringHexToInt(OPTAB[getRealOpcode(opcode)].opcode) + 2, 2);
       objcode += '1';
       objcode += intToStringHex(operandAddress, halfBytes);
@@ -349,7 +345,7 @@ string createObjectCodeFormat34()
     return objcode;
   }
   else if (getFlagFormat(operand) == '=')
-  { // Literals
+  {
     string tempOperand = operand.substr(1, operand.length() - 1);
 
     if (tempOperand == "*")
@@ -414,7 +410,7 @@ string createObjectCodeFormat34()
       }
     }
     else
-    { // No base or pc based addressing in format 4
+    {
       objcode = intToStringHex(stringHexToInt(OPTAB[getRealOpcode(opcode)].opcode) + 3, 2);
       objcode += '1';
       objcode += intToStringHex(operandAddress, halfBytes);
@@ -536,7 +532,7 @@ string createObjectCodeFormat34()
         }
       }
       else
-      { // No base or pc based addressing in format 4
+      {
         objcode = intToStringHex(stringHexToInt(OPTAB[getRealOpcode(opcode)].opcode) + 3, 2);
         objcode += intToStringHex(xbpe + 1, 1);
         objcode += intToStringHex(operandAddress, halfBytes);
@@ -566,7 +562,7 @@ void writeTextRecord(bool lastRecord = false)
   if (lastRecord)
   {
     if (currentRecord.length() > 0)
-    { // Write last text record
+    {
       writeData = intToStringHex(currentRecord.length() / 2, 2) + '^' + currentRecord;
       writeToFile(objectFile, writeData);
       currentRecord = "";
@@ -580,14 +576,13 @@ void writeTextRecord(bool lastRecord = false)
       writeData = "T^" + intToStringHex(address + stringHexToInt(BLOCKS[BLocksNumToName[blockNumber]].startAddress), 6) + '^';
       writeToFile(objectFile, writeData, false);
     }
-    // What is objectCode length > 60
+
     if ((currentRecord + objectCode).length() > 60)
     {
-      // Write current record
+
       writeData = intToStringHex(currentRecord.length() / 2, 2) + '^' + currentRecord;
       writeToFile(objectFile, writeData);
 
-      // Initialize new text currentRecord
       currentRecord = "";
       writeData = "T^" + intToStringHex(address + stringHexToInt(BLOCKS[BLocksNumToName[blockNumber]].startAddress), 6) + '^';
       writeToFile(objectFile, writeData, false);
@@ -604,7 +599,7 @@ void writeTextRecord(bool lastRecord = false)
     }
     else
     {
-      // Write current record if exists
+
       if (currentRecord.length() > 0)
       {
         writeData = intToStringHex(currentRecord.length() / 2, 2) + '^' + currentRecord;
@@ -615,7 +610,6 @@ void writeTextRecord(bool lastRecord = false)
   }
 }
 
-//**************************************************************
 void writeDRecord()
 {
   write_D_Data = "D^";
@@ -654,7 +648,6 @@ void writeRRecord()
   }
   writeToFile(objectFile, write_R_Data);
 }
-//************************************************************
 
 void writeEndRecord(bool write = true)
 {
@@ -670,7 +663,7 @@ void writeEndRecord(bool write = true)
     }
   }
   if ((operand == "" || operand == " ") && currentSectName == "DEFAULT")
-  { // If no operand of END
+  {
     endRecord = "E^" + intToStringHex(startAddress, 6);
   }
   else if (currentSectName != "DEFAULT")
@@ -678,7 +671,7 @@ void writeEndRecord(bool write = true)
     endRecord = "E";
   }
   else
-  { // Make operand on end firstExecutableAddress
+  {
     int firstExecutableAddress;
 
     firstExecutableAddress = stringHexToInt(SYMTAB[firstExecutable_Sec].address);
@@ -690,13 +683,13 @@ void writeEndRecord(bool write = true)
 void pass2()
 {
   string tempBuffer;
-  intermediateFile.open("intermediate_" + fileName); // begin
+  intermediateFile.open("intermediate_" + fileName);
   if (!intermediateFile)
   {
     cout << "Unable to open file: intermediate_" << fileName << endl;
     exit(1);
   }
-  getline(intermediateFile, tempBuffer); // Discard heading line
+  getline(intermediateFile, tempBuffer);
 
   objectFile.open("object_" + fileName);
   if (!objectFile)
@@ -730,7 +723,7 @@ void pass2()
 
   readIntermediateFile(intermediateFile, isComment, lineNumber, address, blockNumber, label, opcode, operand, comment);
   while (isComment)
-  { // Handle with previous comments
+  {
     writeData = to_string(lineNumber) + "\t" + comment;
     writeToFile(ListingFile, writeData);
     readIntermediateFile(intermediateFile, isComment, lineNumber, address, blockNumber, label, opcode, operand, comment);
@@ -748,7 +741,7 @@ void pass2()
     startAddress = 0;
     address = 0;
   }
-  //*************************************************************
+
   if (BLOCKS.size() > 1)
   {
     program_section_length = program_length;
@@ -757,17 +750,12 @@ void pass2()
   {
     program_section_length = CSECT_TAB[currentSectName].length;
   }
-  //************************************************************************
 
   writeData = "H^" + expandString(label, 6, ' ', true) + '^' + intToStringHex(address, 6) + '^' + intToStringHex(program_section_length, 6);
   writeToFile(objectFile, writeData);
 
   readIntermediateFile(intermediateFile, isComment, lineNumber, address, blockNumber, label, opcode, operand, comment);
   currentTextRecordLength = 0;
-
-  //******************************************************************************
-
-  //*****************************************************************************
 
   while (opcode != "END")
   {
@@ -787,7 +775,7 @@ void pass2()
             operand2 = operand.substr(operand.find(',') + 1, operand.length() - operand.find(',') - 1);
 
             if (operand2 == operand)
-            { // If not two operand i.e. a
+            {
               if (getRealOpcode(opcode) == "SVC")
               {
                 objectCode = OPTAB[getRealOpcode(opcode)].opcode + intToStringHex(stoi(operand1), 1) + '0';
@@ -804,7 +792,7 @@ void pass2()
               }
             }
             else
-            { // Two operands i.e. a,b
+            {
               if (REGTAB[operand1].exists == 'n')
               {
                 objectCode = OPTAB[getRealOpcode(opcode)].opcode + "00";
@@ -839,7 +827,7 @@ void pass2()
               objectCode = createObjectCodeFormat34();
             }
           }
-        } // If opcode in optab
+        }
         else if (opcode == "BYTE")
         {
           if (operand[0] == 'X')
@@ -883,7 +871,7 @@ void pass2()
         else if (opcode == "NOBASE")
         {
           if (nobase)
-          { // check if assembler was using base addressing
+          {
             writeData = "Line " + to_string(lineNumber) + ": Assembler wasn't using base addressing";
             writeToFile(errorFile, writeData);
           }
@@ -897,7 +885,7 @@ void pass2()
         {
           objectCode = "";
         }
-        // Write to text record if any generated
+
         writeTextRecord();
 
         if (blockNumber == -1 && address != -1)
@@ -921,21 +909,18 @@ void pass2()
         {
           writeData = to_string(lineNumber) + "\t" + intToStringHex(address) + "\t" + to_string(blockNumber) + "\t" + label + "\t" + opcode + "\t" + operand + "\t" + objectCode + "\t" + comment;
         }
-      } // if not comment
+      }
       else
       {
         writeData = to_string(lineNumber) + "\t" + comment;
       }
-      writeToFile(ListingFile, writeData);                                                                                  // Write listing line
-      readIntermediateFile(intermediateFile, isComment, lineNumber, address, blockNumber, label, opcode, operand, comment); // Read next line
+      writeToFile(ListingFile, writeData);
+      readIntermediateFile(intermediateFile, isComment, lineNumber, address, blockNumber, label, opcode, operand, comment);
       objectCode = "";
-    } // while opcode not end
-    //**********************
+    }
 
-    //*****************************************
     writeTextRecord();
 
-    // Save end record
     writeEndRecord(false);
 
     if (opcode == "CSECT" && !isComment)
@@ -977,8 +962,8 @@ void pass2()
     if (!isComment)
     {
 
-      writeToFile(objectFile, modificationRecord, false); // Write modification record
-      writeEndRecord(true);                               // Write end record
+      writeToFile(objectFile, modificationRecord, false);
+      writeEndRecord(true);
       currentSectName = label;
       modificationRecord = "";
     }
@@ -990,23 +975,15 @@ void pass2()
       writeData = "\nH^" + expandString(label, 6, ' ', true) + '^' + intToStringHex(address, 6) + '^' + intToStringHex(CSECT_TAB[label].length, 6);
       writeToFile(objectFile, writeData);
     }
-    //********************************
-    readIntermediateFile(intermediateFile, isComment, lineNumber, address, blockNumber, label, opcode, operand, comment); // Read next line
+
+    readIntermediateFile(intermediateFile, isComment, lineNumber, address, blockNumber, label, opcode, operand, comment);
     objectCode = "";
   }
-  //****************
-} // Function end
-
-/*TODO
-1)LTORG with *
-2)EQU
-3)Expressions
-*/
+}
 
 int main()
 {
-  cout << "****Input file and executable(assembler.out) should be in same folder****" << endl
-       << endl;
+
   cout << "Enter name of input file:";
   cin >> fileName;
 
@@ -1066,5 +1043,21 @@ int main()
   cout << "\nPerforming PASS2" << endl;
   cout << "Writing object file to 'object_" << fileName << "'" << endl;
   cout << "Writing listing file to 'listing_" << fileName << "'" << endl;
+  string objf = "object_" + fileName;
+  string lstf = "listing_" + fileName;
   pass2();
+  cout << "\nOBJECT FILE:\n\n";
+
+  ifstream pt(objf);
+  if (pt.is_open())
+  {
+    cout << pt.rdbuf() << "\n";
+  }
+  cout << "LISTING FILE:\n\n";
+
+  ifstream gt(lstf);
+  if (gt.is_open())
+  {
+    cout << gt.rdbuf() << "\n";
+  }
 }

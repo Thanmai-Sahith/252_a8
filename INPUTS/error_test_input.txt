@@ -1,0 +1,14 @@
+************PASS1************
+Line: 55 : Invalid OPCODE. Found RSUB
+
+
+************PASS2************
+Line 10 : Symbol doesn't exists. Found 0
+Line 15 : Symbol doesn't exists. Found 0
+Line 20 : Symbol doesn't exists. Found TABLE2
+Line 25 : Symbol doesn't exists. Found TABLE2
+Line 30 : Symbol doesn't exists. Found TABLE,X
+Line 35 : Symbol doesn't exists. Found TABLE2,X
+Line 40 : Symbol doesn't exists. Found COUNT
+Line 45 : Symbol doesn't exists. Found LOOP
+Line 50 : Symbol doesn't exists. Found TOTAL
