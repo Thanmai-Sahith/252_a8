@@ -1,5 +1,9 @@
 # SIC-XE-Assembler-
 
+first clone the repo
+```
+git clone https://github.com/Thanmai-Sahith/252_a8.git
+```
 Steps to compile and run the program(for UNIX/LINUX):-
 
 1. execute 
